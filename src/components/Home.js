@@ -1,142 +1,168 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import Pagination from 'react-js-pagination';
+import Slider from 'rc-slider';
 
-import MetaData from './layout/MetaData'
+import 'rc-slider/assets/index.css';
+
+import MetaData from './layout/MetaData';
+import { useDispatch, useSelector } from 'react-redux';
+import { getProducts, clearErrors } from '../actions/productActions';
+import Product from './product/Product';
+import Loader from './layout/Loader';
+import Error from './layout/Error'; // Importa el componente Error
+
 
 const Home = () => {
-  return (
-    <Fragment>
-        <MetaData title={'Compra los mejores productos en linea'}/>
-        
+    const [currentPage, setCurrentPage] = useState(1);
+    const  [price, setPrice] = useState([0, 15000]);
+    const [category, setCategory] = useState('');
 
-        <h1 id="products_heading">Últimos Productos</h1>
+    const categories = [
+        'Desktop',
+        'Laptops',
+        'Accesorios',
+        'Audifonos',
+        'Cargadores',
+        'Discos_duros'
+    ]
 
-        <section id="products" className="container mt-5">
-            <div className="row">
-                <div className="col-sm-12 col-md-6 col-lg-3 my-3">
-                    <div className="card p-3 rounded">
-                        <img
-                            className="card-img-top mx-auto"
-                            src="https://m.media-amazon.com/images/I/617NtexaW2L._AC_UY218_.jpg"
-                            alt="128GB Solid Storage Memory card - SanDisk Ultra"
-                        />
-                        <div className="card-body d-flex flex-column">
-                            <h5 className="card-title">
-                                {/* Cambiado <a> a <button> porque no hay un enlace real */}
-                                <button className="link-button" style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}>
-                                    128GB Solid Storage Memory card - SanDisk Ultra
-                                </button>
-                            </h5>
-                            <div className="ratings mt-auto">
-                                <div className="rating-outer">
-                                    <div className="rating-inner"></div>
+    const { keyword } = useParams();
+    const dispatch = useDispatch();
+
+    const { products, loading, error, productsCount, resPerPage } = useSelector(state => state.products);
+
+    useEffect(() => {
+        dispatch(getProducts(keyword, currentPage, price, category));
+
+        // Limpiar errores si existen
+        return () => {
+            if (error) {
+                dispatch(clearErrors());
+            }
+        };
+    }, [dispatch, error, keyword, currentPage, price, category]);
+
+    const setCurrentPageNo = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    return (
+        <Fragment>
+            <MetaData title={'Compra los mejores productos en línea'} />
+            <h1 id="products_heading" className="mb-4">Últimos Productos ({productsCount})</h1>
+
+            {loading ? (
+                <Loader />
+            ) : error ? (
+                <Error message={error} />
+            ) : (
+                <section id="products" className="container mt-5">
+                    <div className="row">
+
+
+                        {keyword ? (
+                            <Fragment>
+                                <div className='col-6 col-md-3 mt-5 mb-5'>
+                                    <div className='px-5'>
+                                        <Slider
+                                            range 
+                                            marks={{
+                                                1 : `Q.1`,
+                                                15000 : `Q.15000`,
+                                            }}
+                                            min={1} 
+                                            max={15000}
+                                            defaultValue={[1, 15000]}
+                                            tipFormatter={value => `Q.${value}`}
+                                            tipProps={{
+                                                placement: 'top',
+                                                visible: true,
+                                            }}
+                                            value={price}
+                                            onChange={price => setPrice(price)}
+                                        />
+
+                                        <hr className='my-5' />
+
+                                        <div className='mt-5'>
+                                            <h4 className='mb-3'>
+                                                Categories
+                                            </h4>
+
+                                            <ul className='pl-0'>
+                                                {categories.map(category => (
+                                                    <li
+                                                        style={{cursor: 'pointer',
+                                                                listStyleType: 'none'
+                                                            }}
+                                                        key={category}
+                                                        onClick={()  => setCategory(category)}
+
+                                                    >
+                                                        {category}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+
+                                    </div>
                                 </div>
-                                <span id="no_of_reviews">(5 Reviews)</span>
-                            </div>
-                            <p className="card-text">Q.45.67</p>
-                            {/* Cambiado <a> a <button> */}
-                            <button id="view_btn" className="btn btn-block" style={{ cursor: 'pointer' }}>
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
-                <div className="col-sm-12 col-md-6 col-lg-3 my-3">
-                    <div className="card p-3 rounded">
-                        <img
-                            className="card-img-top mx-auto"
-                            src="https://m.media-amazon.com/images/I/61B04f0ALWL._AC_UY218_.jpg"
-                            alt="Wyze Cam 1080p HD Indoor Wireless Smart Home Camera"
-                        />
-                        <div className="card-body d-flex flex-column">
-                            <h5 className="card-title">
-                                {/* Cambiado <a> a <button> */}
-                                <button className="link-button" style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}>
-                                    Wyze Cam 1080p HD Indoor Wireless Smart Home Camera
-                                </button>
-                            </h5>
-                            <div className="ratings mt-auto">
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star-half-o"></i>
-                                <i className="fa fa-star-o"></i>
-                                <span id="no_of_reviews">(5 Reviews)</span>
-                            </div>
-                            <p className="card-text">Q.965.67</p>
-                            {/* Cambiado <a> a <button> */}
-                            <button id="view_btn" className="btn btn-block" style={{ cursor: 'pointer' }}>
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                                <div className='col-6 col-md-9'>
+                                    <div className='row'>
+                                        {products.length > 0 ? (
+                                            products.map(product => (
+                                                <Product key={product._id} product={product} col={4} />
+                                            ))
+                                        ) : (
+                                            <div className="col-12">
+                                                <p className="text-center">No hay productos disponibles.</p>
+                                            </div>
+                                        )}    
+                                    </div>
 
-                <div className="col-sm-12 col-md-6 col-lg-3 my-3">
-                    <div className="card p-3 rounded">
-                        <img
-                            className="card-img-top mx-auto"
-                            src="https://m.media-amazon.com/images/I/813oF-FY01L._AC_UY218_.jpg"
-                            alt="Fujifilm Instax Mini Instant Film Twin Pack"
-                        />
-                        <div className="card-body d-flex flex-column">
-                            <h5 className="card-title">
-                                {/* Cambiado <a> a <button> */}
-                                <button className="link-button" style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}>
-                                    Fujifilm Instax Mini Instant Film Twin Pack (White)
-                                </button>
-                            </h5>
-                            <div className="ratings mt-auto">
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star-half-o"></i>
-                                <i className="fa fa-star-o"></i>
-                                <span id="no_of_reviews">(5 Reviews)</span>
-                            </div>
-                            <p className="card-text">Q125.57</p>
-                            {/* Cambiado <a> a <button> */}
-                            <button id="view_btn" className="btn btn-block" style={{ cursor: 'pointer' }}>
-                                View Details
-                            </button>
-                        </div>
+                                </div>
+                            </Fragment>
+                        ): (
+                                products.length > 0 ? (
+                                    products.map(product => (
+                                        <Product key={product._id} product={product} col={3} />
+                                    ))
+                                ) : (
+                                    <div className="col-12">
+                                        <p className="text-center">No hay productos disponibles.</p>
+                                    </div>
+                                )                            
+                        )}
                     </div>
-                </div>
+                </section>
+            )}
 
-                <div className="col-sm-12 col-md-6 col-lg-3 my-3">
-                    <div className="card p-3 rounded">
-                        <img
-                            className="card-img-top mx-auto"
-                            src="https://m.media-amazon.com/images/I/61pBvlYVPxL._AC_UY218_.jpg"
-                            alt="AmazonBasics High-Speed HDMI Cable"
-                        />
-                        <div className="card-body d-flex flex-column">
-                            <h5 className="card-title">
-                                {/* Cambiado <a> a <button> */}
-                                <button className="link-button" style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}>
-                                    AmazonBasics High-Speed HDMI Cable
-                                </button>
-                            </h5>
-                            <div className="ratings mt-auto">
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star"></i>
-                                <i className="fa fa-star-half-o"></i>
-                                <i className="fa fa-star-o"></i>
-                                <span id="no_of_reviews">(5 Reviews)</span>
-                            </div>
-                            <p className="card-text">Q75.56</p>
-                            {/* Cambiado <a> a <button> */}
-                            <button id="view_btn" className="btn btn-block" style={{ cursor: 'pointer' }}>
-                                View Details
-                            </button>
-                        </div>
-                    </div>
+            {resPerPage <= productsCount && (
+                <div className='d-flex justify-content-center mt-5'>
+                    <Pagination 
+                        activePage={currentPage}
+                        itemsCountPerPage={resPerPage}
+                        totalItemsCount={productsCount}
+                        onChange={setCurrentPageNo}
+                        nextPageText={'⟩'}
+                        prevPageText={'⟨'}
+                        firstPageText={'«'}
+                        lastPageText={'»'}
+                        itemClass='page-item'
+                        linkClass='page-link'
+                    />
                 </div>
-            </div>
-        </section>
-    </Fragment>
-  )
-}
+            )}
+        </Fragment>
+    );
+};
 
-export default Home
+export default Home;
+
+
+
+
+
+
